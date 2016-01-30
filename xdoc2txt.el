@@ -4,7 +4,7 @@
 
 ;; Author: ril
 ;; Created: 2016-01-30 20:27:29
-;; Last Modified: 2016-01-30 23:38:46
+;; Last Modified: 2016-01-30 23:43:59
 ;; Version: 0.1
 ;; Keywords: Windows, data
 ;; URL: https://github.com/fenril058/xdoc2txt
@@ -131,16 +131,6 @@ They must be written in lowercase."
 (defun xdoc2txt-remove-advice-find-file ()
   (interactive)
   (advice-remove 'find-file 'xdoc2txt-advice-find-file))
-
-;; (defadvice find-file (around xdoc2txt-find-file (file &optional wildcards))
-;;   (if (and
-;;        xdoc2txt-binary-use-xdoc2txt
-;;        (member (file-name-extension file) xdoc2txt-extensions)
-;;        (y-or-n-p
-;;         "use xdoc2txt to show the binary data?"))
-;;       (xdoc2txt-binary-file-view file)
-;;     ad-do-it))
-;; (ad-activate 'find-file)
 
 (provide 'xdoc2txt)
 ;;; xdoc2txt.el ends here
