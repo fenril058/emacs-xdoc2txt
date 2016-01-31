@@ -4,7 +4,7 @@
 
 ;; Author: ril
 ;; Created: 2016-01-30 20:27:29
-;; Last Modified: 2016-01-31 13:04:15
+;; Last Modified: 2016-01-31 20:59:31
 ;; Version: 0.2
 ;; Keywords: Windows, data
 ;; URL: https://github.com/fenril058/xdoc2txt
@@ -33,9 +33,6 @@
 
 ;; This file is originated from
 ;;  <http://www.bookshelf.jp/soft/meadow_23.html#SEC238>
-
-;; Now this program is only compatible with emacs 24.4 and later, because
-;; `nadvice.el' is used and the old style advice has been commented out.
 
 ;;; Code
 (require 'cl-lib)
@@ -132,30 +129,38 @@ They must be written in lowercase."
   (goto-char (point-min))
   (view-mode t))
 
-(defun xdoc2txt-advice-find-file (orig-func file &rest args)
-  (if (and
-       xdoc2txt-binary-use-xdoc2txt
-       (member (file-name-extension file) xdoc2txt-extensions)
-       (y-or-n-p
-         "Use xdoc2txt to show the binary data?"))
-      (xdoc2txt-binary-file-view file)
-    (apply orig-func file args))
-  'around)
-(advice-add 'find-file :around 'xdoc2txt-advice-find-file)
-
-(defun xdoc2txt-remove-advice-find-file ()
-  (interactive)
-  (advice-remove 'find-file 'xdoc2txt-advice-find-file))
-
-;; (defadvice find-file (around xdoc2txt-find-file (file &optional wildcards))
+;; (defun xdoc2txt-advice-find-file (orig-func file &rest args)
+;;   (interactive)
 ;;   (if (and
 ;;        xdoc2txt-binary-use-xdoc2txt
 ;;        (member (file-name-extension file) xdoc2txt-extensions)
 ;;        (y-or-n-p
-;;         "use xdoc2txt to show the binary data?"))
+;;         "Use xdoc2txt to show the binary data?")
+;;        )
 ;;       (xdoc2txt-binary-file-view file)
-;;     ad-do-it))
-;; (ad-activate 'find-file)
+;;     (apply orig-func file args))
+;;   'around)
+
+;; (advice-add 'find-file :around 'xdoc2txt-advice-find-file)
+
+;; (defun xdoc2txt-add-advice-find-file ()
+;;   (interactive)
+;;   (advice-add 'find-file :around 'xdoc2txt-advice-find-file))
+
+;; (defun xdoc2txt-remove-advice-find-file ()
+;;   (interactive)
+;;   (advice-remove 'find-file 'xdoc2txt-advice-find-file))
+
+(defadvice find-file (around xdoc2txt-find-file (file &optional wildcards))
+  (if (and
+       xdoc2txt-binary-use-xdoc2txt
+       (member (file-name-extension file) xdoc2txt-extensions)
+       (y-or-n-p
+        "Use xdoc2txt to show the binary data?"))
+      (xdoc2txt-binary-file-view file)
+    ad-do-it))
+
+(ad-activate 'find-file)
 
 (provide 'xdoc2txt)
 ;;; xdoc2txt.el ends here
