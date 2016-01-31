@@ -4,8 +4,8 @@
 
 ;; Author: ril
 ;; Created: 2016-01-30 20:27:29
-;; Last Modified: 2016-01-30 23:43:59
-;; Version: 0.1
+;; Last Modified: 2016-01-31 12:51:31
+;; Version: 0.2
 ;; Keywords: Windows, data
 ;; URL: https://github.com/fenril058/xdoc2txt
 
@@ -24,16 +24,18 @@
 
 ;;; Commentary:
 
-;; This program is a interface of the xdoc2txt for Emacs.  It's only
-;; compatible with emacs 24.4 and later, because of `nadvice.el'.
+;; This program is a interface of the xdoc2txt for Emacs.
+
+;; The program xdoc2txt is a text converter which extract text from
+;; binary file such as PDF, WORD, EXCEL, 一太郎 etc. It only works on
+;; MS Windows. Its binary file and more infomation can be obtained
+;; from <http://ebstudio.info/home/xdoc2txt.html>
 
 ;; This file is originated from
 ;;  <http://www.bookshelf.jp/soft/meadow_23.html#SEC238>
 
-;; xdoc2txt is a text converter which extract text from binary file
-;; such as PDF, WORD, EXCEL, 一太郎 etc. Its binary file and more
-;; infomation can be obtained from
-;; <http://ebstudio.info/home/xdoc2txt.html>
+;; Now this program is only compatible with emacs 24.4 and later, because
+;; `nadvice.el' is used and the old style advice has been commented out.
 
 ;;; Code
 (require 'cl-lib)
@@ -65,6 +67,10 @@ They must be written in lowercase."
   :type 'list
   :group 'xdoc2txt)
 
+(defcustom xdoc2txt-make-header t
+  "If non-nil, xdoc2txt insert header defined in
+  `xdoc2txt-make-header-format'")
+
 (defvar xdoc2txt-encoding-option nil)
 
 (defun xdoc2txt-select-encoding ()
@@ -79,40 +85,49 @@ They must be written in lowercase."
             ('sjis " -j ")
             ))))
 
-(defun xdoc2txt-binary-file-view (file)
-  "View a file with xdoc2txt"
-  (interactive "f")
-  (let ((dummy-buff
-         (generate-new-buffer
-          (concat "xdoc2txt:" (file-name-nondirectory file)))))
-    (set-buffer dummy-buff)
-    (let ((fn (concat
-               (expand-file-name
-                (make-temp-name "xdoc2")
-                temporary-file-directory)
-               "."
-               (file-name-extension file)
-               )))
-      (copy-file file fn t)
+(defun xdoc2txt-make-header-format (file)
+  (concat "XDOC2TXT FILE: " (file-name-nondirectory file) "\n"
+          "----------------------------------------------------\n"))
+
+(defun xdoc2txt-make-format (file)
+  (let ((fn (concat
+             (expand-file-name
+              (make-temp-name "xdoc2")
+              temporary-file-directory)
+             "."
+             (file-name-extension file)
+             )))
+    (copy-file file fn t)
+    (xdoc2txt-select-encoding)
+    (when xdoc2txt-make-header
       (insert
-       "XDOC2TXT FILE: " (file-name-nondirectory file) "\n"
-       "----------------------------------------------------\n"
-       (xdoc2txt-select-encoding)
-       (shell-command-to-string
-        (concat "xdoc2txt" xdoc2txt-encoding-option fn)
-        ))
-      (goto-char (point-min))
-      (while (re-search-forward "\r" nil t)
-        (delete-region (match-beginning 0)
-                       (match-end 0)))
-      (goto-char (point-min))
-      (while (re-search-forward
-              "\\([\n ]+\\)\n[ ]*\n" nil t)
-        (delete-region (match-beginning 1)
-                       (match-end 1)))
-      (delete-file fn)
-      )
-    (setq buffer-read-only t)
+       (xdoc2txt-make-header-format file)))
+    (insert
+     (shell-command-to-string
+      (concat "xdoc2txt" xdoc2txt-encoding-option fn)
+      ))
+    ;; (goto-char (point-min))
+    ;; (while (re-search-forward "\r" nil t)
+    ;;   (delete-region (match-beginning 0)
+    ;;                  (match-end 0)))
+    ;; (goto-char (point-min))
+    ;; (while (re-search-forward
+    ;;         "\\([\n ]+\\)\n[ ]*\n" nil t)
+    ;;   (delete-region (match-beginning 1)
+    ;;                  (match-end 1)))
+    (delete-file fn)))
+
+(defun xdoc2txt-binary-file-view (file)
+  "View a binary file with xdoc2txt"
+  (interactive "f")
+  (let ((dummy-buff-name (concat "xdoc2txt:" (file-name-nondirectory file)))
+        (dummy-buff))
+    (when (get-buffer dummy-buff-name)
+     (kill-buffer dummy-buff-name))
+    (setq dummy-buff (get-buffer-create dummy-buff-name))
+    (set-buffer dummy-buff)
+    (xdoc2txt-make-format file)
+    ;; (setq buffer-read-only t)
     (set-window-buffer (selected-window) dummy-buff))
   (goto-char (point-min))
   (view-mode t))
@@ -122,7 +137,7 @@ They must be written in lowercase."
        xdoc2txt-binary-use-xdoc2txt
        (member (file-name-extension file) xdoc2txt-extensions)
        (y-or-n-p
-         "use xdoc2txt to show the binary data?"))
+         "Use xdoc2txt to show the binary data?"))
       (xdoc2txt-binary-file-view file)
     (apply orig-func file args))
   'around)
@@ -131,6 +146,16 @@ They must be written in lowercase."
 (defun xdoc2txt-remove-advice-find-file ()
   (interactive)
   (advice-remove 'find-file 'xdoc2txt-advice-find-file))
+
+;; (defadvice find-file (around xdoc2txt-find-file (file &optional wildcards))
+;;   (if (and
+;;        xdoc2txt-binary-use-xdoc2txt
+;;        (member (file-name-extension file) xdoc2txt-extensions)
+;;        (y-or-n-p
+;;         "use xdoc2txt to show the binary data?"))
+;;       (xdoc2txt-binary-file-view file)
+;;     ad-do-it))
+;; (ad-activate 'find-file)
 
 (provide 'xdoc2txt)
 ;;; xdoc2txt.el ends here
