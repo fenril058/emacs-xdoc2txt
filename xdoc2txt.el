@@ -1,10 +1,10 @@
-;;; xdoc2txt.el --- binary converter                 -*- lexical-binding: t; -*-
+;;; xdoc2txt.el --- interface of xdoc2txt for Emacs -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2016  ril
 
 ;; Author: ril
 ;; Created: 2016-01-30 20:27:29
-;; Last Modified: 2016-01-31 12:51:31
+;; Last Modified: 2016-01-31 13:04:15
 ;; Version: 0.2
 ;; Keywords: Windows, data
 ;; URL: https://github.com/fenril058/xdoc2txt
@@ -24,7 +24,7 @@
 
 ;;; Commentary:
 
-;; This program is a interface of the xdoc2txt for Emacs.
+;; This program is a interface of xdoc2txt for Emacs.
 
 ;; The program xdoc2txt is a text converter which extract text from
 ;; binary file such as PDF, WORD, EXCEL, 一太郎 etc. It only works on
