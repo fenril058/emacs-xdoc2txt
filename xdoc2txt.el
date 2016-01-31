@@ -4,7 +4,7 @@
 
 ;; Author: ril
 ;; Created: 2016-01-30 20:27:29
-;; Last Modified: 2016-01-31 20:59:31
+;; Last Modified: 2016-01-31 21:38:30
 ;; Version: 0.2
 ;; Keywords: Windows, data
 ;; URL: https://github.com/fenril058/xdoc2txt
@@ -114,6 +114,7 @@ They must be written in lowercase."
     ;;                  (match-end 1)))
     (delete-file fn)))
 
+;;;###autoload
 (defun xdoc2txt-binary-file-view (file)
   "View a binary file with xdoc2txt"
   (interactive "f")
@@ -160,7 +161,10 @@ They must be written in lowercase."
       (xdoc2txt-binary-file-view file)
     ad-do-it))
 
-(ad-activate 'find-file)
+;;;###autoload
+(defun xdoc2txt-acivate-advice ()
+  (interactive)
+  (ad-activate 'find-file))
 
 (provide 'xdoc2txt)
 ;;; xdoc2txt.el ends here
